@@ -5,12 +5,28 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    
+  <meta charset="utf-8">
     <title>TRAVEL N CHANGE</title>
    
    <?php include "head-meta.php";?>
-<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
-
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="js/cart.js"></script>
+<style type="text/css">
+#global {
+	height: 300px;
+	width: 100%;
+	border: 1px solid #ddd;
+	background: #f1f1f1;
+	overflow-y: scroll;
+}
+#mensajes {
+	height: auto;
+}
+.texto {
+	padding:2px;
+	background:#fff;
+}
+</style>
   </head>
   <!-- Body-->
   <body class="handheld-toolbar-enabled">
@@ -53,7 +69,9 @@
          $select_cart = mysqli_query($mysqli, "SELECT * FROM `cart`");
          $grand_total = 0;
          if(mysqli_num_rows($select_cart) > 0){
+           $cont=1;
             while($fetch_cart = mysqli_fetch_assoc($select_cart)){
+             
          ?>
             <div class="d-sm-flex justify-content-between align-items-center my-2 pb-3 border-bottom">
               <div class="d-block d-sm-flex align-items-center text-center text-sm-start"><a class="d-inline-block flex-shrink-0 mx-auto me-sm-4" href="shop-single-v1.html"><img src="dash/uploaded_img/<?php echo $fetch_cart['image']; ?>" width="160" alt="Product"></a>
@@ -62,19 +80,20 @@
                  <!-- <div class="fs-sm"><span class="text-muted me-2">Size:</span>8.5</div>-->
                   <div class="fs-sm"><span class="text-muted me-2">subtotal:</span>€ <?php echo $sub_total = $fetch_cart['price'] * $fetch_cart['quantity']; ?></div>
                   <div class="fs-lg text-accent pt-2">€ <?php echo number_format($fetch_cart['price']); ?></div>
-                  
+                  <input type="hidden" id="subtotal<?php echo $cont; ?>" value="<?php echo $sub_total = $fetch_cart['price'] * $fetch_cart['quantity']; ?>" />
+                  <input type="hidden" id="num<?php echo $cont; ?>" value="<?php echo $fetch_cart['id']; ?>" >
+                  <input type="hidden" id="categoria<?php echo $cont; ?>" value="<?php echo $fetch_cart['n_service']; ?>" >
                 </div>
               </div>
               <div class="pt-2 pt-sm-0 ps-sm-3 mx-auto mx-sm-0 text-center text-sm-start" style="max-width: 9rem;">
                 <label class="form-label" for="quantity1">Quantity</label>
-                 <form action="" method="post">
-                  <input type="hidden" name="update_quantity_id"  value="<?php echo $fetch_cart['id']; ?>" >
-                  <button>-</button>
-                  <input class="form-control" type="number" name="update_quantity" min="1"  value="<?php echo $fetch_cart['quantity']; ?>" >
-                  <button>+</button>
-                  <input type="submit" value="update" name="update_update_btn">
-                  <?php echo $fetch_cart['n_service'];?>
-               </form> 
+                 <div id="carrito" >
+                  <form action="" method="post">
+                  <input type="hidden" name="update_quantity_id"  value="<?php echo $fetch_cart['id']; ?>" >                 
+                  <input id="cantservicio<?php echo $cont; ?>" class="apuntadorcarro form-control" type="number" name="update_quantity" min="1"  value="<?php echo $fetch_cart['quantity']; ?>" />                                    
+                 
+               </form>
+               </div>
                 <a href="cart.php?remove=<?php echo $fetch_cart['id']; ?>" onclick="return confirm('remove item from cart?')" class="delete-btn"> <i class="ci-close-circle me-2"></i> remove</a>
                 <!--<button class="btn btn-link px-0 text-danger" type="button"><i class="ci-close-circle me-2"></i><span class="fs-sm">Remove</span></button>-->
                 <!--<a href="cart.php?delete_all" onclick="return confirm('are you sure you want to delete all?');" class="delete-btn"> <i class="fas fa-trash"></i> delete all </a>-->
@@ -83,8 +102,13 @@
 
 
             <?php
-           $grand_total += $sub_total;  
+           $grand_total += $sub_total; 
+           $cont++; 
             };
+            ?>
+            
+            <input id="totalDescuentos" type="hidden" value="0" >
+            <?php
          };
          ?>
          
@@ -103,7 +127,7 @@
                       <!--<form class="accordion-body needs-validation" method="post" novalidate>-->
                         <div class="mb-3">
                           
-                          <input class="" type="text" name="total" style=" border: 0;text-align: center; font-size: 1.55rem; font-weight: 400 !important; line-height: 1.2; color: #373f50;" value="€ <?php echo $grand_total; ?>" id="total">
+                          <input id="montopagar" type="text" name="total" style=" border: 0;text-align: center; font-size: 1.55rem; font-weight: 400 !important; line-height: 1.2; color: #373f50;" value="€ <?php echo $grand_total; ?>" id="total">
                         </div>
                     </div>
                 </div>
@@ -148,41 +172,7 @@
     <!-- Vendor scrits: js libraries and plugins-->
     <?php include "scripts.php";?>
    
-       <script>
-        
-  $(document).ready(function(){
-    $('#activate').on('click', function(){
-      var coupon = $('#coupon').val();
-      var price = $('#price').val();
      
-      if(coupon == ""){
-         /*mensaje = "debes introducir un codigo";
-         document.getElementById("ejemplo").innerHTML = mensaje;*/
-     alert(" Coupon vacio!");
-      }else{
-       
-        $.post('get_discount.php', {coupon: coupon, price: price}, function(data){
-          
-          if(data == "error"){
-
-
-
-            alert("Invalid Coupon Code!");
-           
-            //$('#total').val(price);
-           // $('#result').html('');
-          }else{
-            var json = JSON.parse(data);
-            
-            $('#result').html("<h4 class='pull-right text-danger'>"+json.discount+"% Off</h4>");
-            $('#total').val(json.price);
-            
-          }
-        });
-      }
-    });
-  });
-</script>
 
   </body>
 </html>

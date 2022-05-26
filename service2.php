@@ -30,7 +30,7 @@ if(isset($_POST['add_to_cart'])){
    
    <?php include "head-meta.php";?>
    <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
-
+   <script src="js/cart.js"></script>
   </head>
   <!-- Body-->
   <body class="handheld-toolbar-enabled">

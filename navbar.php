@@ -1,8 +1,10 @@
 
       <?php
-      
-      $select_rows = mysqli_query($mysqli, "SELECT * FROM `cart`") or die('query failed');
-      $row_count = mysqli_num_rows($select_rows);
+      $contnav=1;
+      $select_cart = mysqli_query($mysqli, "SELECT * FROM cart left join coupon on coupon.coupon_id=cart.id_Coupon ");
+         $grand_total = 0;
+   
+      $row_count = mysqli_num_rows($select_cart);
 
       ?>
  <div class="container"><img src="logo.png"><a class="navbar-brand d-none d-sm-block me-4 order-lg-1 logo" href="index.html">&nbsp;TRAVEL N CHANGE</a>
@@ -11,11 +13,41 @@
           <div class="navbar-toolbar d-flex align-items-center order-lg-3">
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"><span class="navbar-toggler-icon"></span></button><!--<a class="navbar-tool ms-1 me-n1" href="#signin-modal" data-bs-toggle="modal"><span class="navbar-tool-tooltip">Account</span>
               <div class="navbar-tool-icon-box"><i class="navbar-tool-icon ci-user"></i></div></a>-->
-            <div class="navbar-tool dropdown ms-3"><a class="navbar-tool-icon-box bg-secondary dropdown-toggle" href="cart3.php"><i class="navbar-tool-icon ci-cart"></i><span class="navbar-tool-label"><?php echo $row_count; ?></span></a>
+            <div  class="navbar-tool dropdown ms-3"><a class="navbar-tool-icon-box bg-secondary dropdown-toggle" href="cart3.php"><i class="navbar-tool-icon ci-cart"></i><span class="navbar-tool-label"><?php echo $row_count; ?></span></a>
                 
-              <div class="dropdown-menu dropdown-menu-end text-center py-4 px-3">
-                <div style="width: 16rem;"><img class="d-inline-block mb-2" src="descarga.png">
-                  <p class="fs-sm text-muted mb-0">Your cart is currently empty</p>
+              <div id="divcarrito" style="width:460px; " class="dropdown-menu dropdown-menu-end py-4 px-3 ">
+                <div id="global"  >
+                 <?php 
+                       $descuento=0;
+                       $total=0;
+                 while($fetch_cart = mysqli_fetch_assoc($select_cart)){ ?>
+                  <form >
+                 <div class="form-group row">
+                 <label  class="col-sm-4 col-form-label"><?php echo $fetch_cart['name']; ?></label>
+    <div class="col-sm-4">
+    <input type="hidden" id="subtotal<?php echo $contnav; ?>" value="<?php echo $sub_total = $fetch_cart['price'] * $fetch_cart['quantity']; ?>" />
+      <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="€ <?php echo number_format($fetch_cart['price']); ?>">
+    </div>
+    <div class="col-sm-4">
+    <input id="cantservicionav<?php echo $contnav; ?>" class="apuntadorcarronav form-control" type="number" name="update_quantity" min="1"  value="<?php echo $fetch_cart['quantity']; ?>" />
+    </div>
+                 
+                </div>
+                 
+                <?php $contnav++; 
+                 $total+=($fetch_cart['price']*$fetch_cart['quantity']);
+              $descuento+=($fetch_cart['price']*$fetch_cart['quantity'])-($fetch_cart['price']*($fetch_cart['discount'])/100);
+              } ?>
+                <input id="totalservicios" type="hidden" value="<?php echo $contnav; ?>" >
+<?php if(!isset($row_count)){ ?>
+  <img class="d-inline-block mb-2" src="descarga.png">
+                  <p id="contenido" class="fs-sm text-muted mb-0">Your cart is currently empty</p>
+<?php }else{  ?>
+<div >Total <span id="totalaPagar"><?php echo $total; ?></div>
+<div>Descuento <span id="DescuentoNav"> <?php echo $total-$descuento; ?> </span></div>
+<?php } ?>
+                
+
                 </div>
               </div>
             </div>
