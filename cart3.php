@@ -65,22 +65,23 @@
             </div>
             <!-- Item-->
                <?php 
-         
+         $subtotal=0;
          $select_cart = mysqli_query($mysqli, "SELECT * FROM `cart`");
          $grand_total = 0;
          if(mysqli_num_rows($select_cart) > 0){
            $cont=1;
-            while($fetch_cart = mysqli_fetch_assoc($select_cart)){
-             
+           $totaldescuento=0;
+           while($fetch_cart = mysqli_fetch_assoc($select_cart)){
+            $subtotal=$fetch_cart['price']*$fetch_cart['quantity'];
          ?>
             <div class="d-sm-flex justify-content-between align-items-center my-2 pb-3 border-bottom">
               <div class="d-block d-sm-flex align-items-center text-center text-sm-start"><a class="d-inline-block flex-shrink-0 mx-auto me-sm-4" href="shop-single-v1.html"><img src="dash/uploaded_img/<?php echo $fetch_cart['image']; ?>" width="160" alt="Product"></a>
                 <div class="pt-2">
                   <h3 class="product-title fs-base mb-2"><a href="shop-single-v1.html"><?php echo $fetch_cart['name']; ?></a></h3>
                  <!-- <div class="fs-sm"><span class="text-muted me-2">Size:</span>8.5</div>-->
-                  <div class="fs-sm"><span class="text-muted me-2">subtotal:</span>€ <?php echo $sub_total = $fetch_cart['price'] * $fetch_cart['quantity']; ?></div>
-                  <div class="fs-lg text-accent pt-2">€ <?php echo number_format($fetch_cart['price']); ?></div>
-                  <input type="hidden" id="subtotal<?php echo $cont; ?>" value="<?php echo $sub_total = $fetch_cart['price'] * $fetch_cart['quantity']; ?>" />
+                 
+                  <div class="fs-lg text-accent pt-2">€ <?php echo number_format($fetch_cart['price']); ?></div>                  
+                  <input type="hidden" id="subtotal<?php echo $cont; ?>" value="<?php echo  $fetch_cart['price'] * $fetch_cart['quantity']; ?>" />
                   <input type="hidden" id="num<?php echo $cont; ?>" value="<?php echo $fetch_cart['id']; ?>" >
                   <input type="hidden" id="categoria<?php echo $cont; ?>" value="<?php echo $fetch_cart['n_service']; ?>" >
                 </div>
@@ -102,12 +103,21 @@
 
 
             <?php
-           $grand_total += $sub_total; 
+            $grand_total += $subtotal; 
+            $cupon=$fetch_cart['id_Coupon'];
+            if($cupon>0){              
+               $strDescuento=" SELECT * FROM coupon WHERE coupon_id =".$cupon;                
+               $resDescuento=mysqli_query($mysqli,$strDescuento);
+               $fetch_desct = mysqli_fetch_assoc($resDescuento);
+               $totaldescuento+=$sub_total-($sub_total*($fetch_desct['discount']/100));
+            }
+           
+           
            $cont++; 
             };
             ?>
             
-            <input id="totalDescuentos" type="hidden" value="0" >
+            <input id="totalDescuentos" type="hidden" value="<?php echo $totaldescuento; ?>" >
             <?php
          };
          ?>
@@ -121,13 +131,15 @@
               <div class="py-2 px-xl-2">
               
                 <div class="text-center mb-4 pb-3 border-bottom">
-                  <h2 class="h6 mb-3 pb-1">Total</h2>
+                  
                       <div class="accordion" id="order-options">
                                    <div class="accordion-collapse collapse show"  data-bs-parent="#order-options">
                       <!--<form class="accordion-body needs-validation" method="post" novalidate>-->
                         <div class="mb-3">
-                          
-                          <input id="montopagar" type="text" name="total" style=" border: 0;text-align: center; font-size: 1.55rem; font-weight: 400 !important; line-height: 1.2; color: #373f50;" value="€ <?php echo $grand_total; ?>" id="total">
+                          <span>Subtotal:</span><input id="Subtotal" type="text" name="subtotal" style=" border: 0;text-align: center; font-size: 1.55rem; font-weight: 400 !important; line-height: 1.2; color: #373f50;" value="€ <?php echo ($grand_total); ?>" id="subtotal">
+                          <span>Descuento:</span><input id="descuento" type="text" name="descuento" style=" border: 0;text-align: center; font-size: 1.55rem; font-weight: 400 !important; line-height: 1.2; color: #373f50;" value="€ <?php echo $desctotal=(($grand_total)- ($grand_total-$totaldescuento)  ); ?>" id="subtotal">
+                          <spane>Total:</span><input id="montopagar" type="text" name="total" style=" border: 0;text-align: center; font-size: 1.55rem; font-weight: 400 !important; line-height: 1.2; color: #373f50;" value="€ <?php echo ($grand_total-$desctotal); ?>" id="total">
+
                         </div>
                     </div>
                 </div>
@@ -150,11 +162,9 @@
                       <!--</form>-->
               </div>
                        </div>
-<button class="btn btn-primary btn-shadow d-block w-100 mt-4" type="submit"><i class="ci-card fs-lg me-2"></i>Proceed to Checkout</button>
-       
-              
+                      <button class="btn btn-primary btn-shadow d-block w-100 mt-4" type="submit"><i class="ci-card fs-lg me-2"></i>Proceed to Checkout</button>       
               </div>
-            </div>
+            </div>        
              </form>
           </aside>
          

@@ -20,31 +20,38 @@
                  <?php 
                        $descuento=0;
                        $total=0;
-                 while($fetch_cart = mysqli_fetch_assoc($select_cart)){ ?>
+                       $subtotal=0;
+                 while($fetch_cartnav = mysqli_fetch_assoc($select_cart)){  
+                  $subtotal=$fetch_cartnav['price']*$fetch_cartnav['quantity'];                
+                   ?>
                   <form >
                  <div class="form-group row">
-                 <label  class="col-sm-4 col-form-label"><?php echo $fetch_cart['name']; ?></label>
+                 <label  class="col-sm-4 col-form-label"><?php echo $fetch_cartnav['name']; ?></label>
     <div class="col-sm-4">
-    <input type="hidden" id="subtotal<?php echo $contnav; ?>" value="<?php echo $sub_total = $fetch_cart['price'] * $fetch_cart['quantity']; ?>" />
-      <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="€ <?php echo number_format($fetch_cart['price']); ?>">
+    <input type="hidden" id="subtotal<?php echo $contnav; ?>" value="<?php echo $sub_total = $fetch_cartnav['price'] * $fetch_cartnav['quantity']; ?>" />
+      <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="€ <?php echo number_format($fetch_cartnav['price']); ?>">
     </div>
     <div class="col-sm-4">
-    <input id="cantservicionav<?php echo $contnav; ?>" class="apuntadorcarronav form-control" type="number" name="update_quantity" min="1"  value="<?php echo $fetch_cart['quantity']; ?>" />
+    <input id="cantservicionav<?php echo $contnav; ?>" class="apuntadorcarronav form-control" type="number" name="update_quantity" min="1"  value="<?php echo $fetch_cartnav['quantity']; ?>" />
     </div>
                  
                 </div>
                  
                 <?php $contnav++; 
-                 $total+=($fetch_cart['price']*$fetch_cart['quantity']);
-              $descuento+=($fetch_cart['price']*$fetch_cart['quantity'])-($fetch_cart['price']*($fetch_cart['discount'])/100);
+                 $total+=$subtotal;
+                 if($fetch_cartnav['discount']>0){
+                  $descuento+=$sub_total-($sub_total*($fetch_cartnav['discount']/100));
+                 }
+              
               } ?>
                 <input id="totalservicios" type="hidden" value="<?php echo $contnav; ?>" >
 <?php if(!isset($row_count)){ ?>
   <img class="d-inline-block mb-2" src="descarga.png">
                   <p id="contenido" class="fs-sm text-muted mb-0">Your cart is currently empty</p>
 <?php }else{  ?>
-<div >Total <span id="totalaPagar"><?php echo $total; ?></div>
-<div>Descuento <span id="DescuentoNav"> <?php echo $total-$descuento; ?> </span></div>
+<div >Subtotal <span id="subtotalnav">€<?php echo ($total); ?></div>
+<div>Descuento <span id="DescuentoNav"> €<?php echo $descuento; ?> </span></div>
+<div>Total <span id="totalNav">€ <?php echo $total-$descuento; ?> </span></div>
 <?php } ?>
                 
 

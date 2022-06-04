@@ -16,15 +16,21 @@ $importeCoupon=0;
 $total=0;
 
 
-$sqlQuery=" SELECT  * FROM cart WHERE fechaCompra='".$fechaCompra."' ORDER BY fechaCompra desc limit ".$totalProductos;// exit;
+$sqlQuery=" select *  from facturas_detalle 
+inner join cart on facturas_detalle.idproducto=cart.id
+inner join products on products.name=cart.name 
+inner join pdf_servicios on cart.n_service = pdf_servicios.id_servicios
+left join coupon on cart.id_Coupon=coupon.coupon_id
+WHERE cart.fechaCompra='".$fechaCompra."'
+order by cart.fechacompra desc limit ".$totalProducto;
 $prodDet=mysqli_query($mysqli,$sqlQuery);
-while ($rowFacDet=mysqli_fetch_array($prodDet)) {
-	$nameprodc=$rowFacDet[0];
-	$queryProduct=" SELECT * FROM product where name='".$nameprodc."'";
-	$rstproducto=mysqli_query($mysqli,$queryProduct);
-	$rowrstproducto=mysqli_fetch_array($rstproducto);
-	$idcupon=$rowrstproducto[6];	
+while ($rowFacDet=mysqli_fetch_assoc($prodDet)) {		
 	$strdatosProducto.='<tr>
+		<td width="auto" nowrap>'.$rowrstproducto['name'].'</td>
+		<td width="auto" nowrap>'.$rowrstproducto['quantity'].'</td>
+		<td width="auto" nowrap>€'.($rowrstproducto['price']*$rowrstproducto['quantity']).'</td>		
+	</tr>';	
+	$strdatosServicios.='<tr>
 		<td width="auto" nowrap>'.$rowrstproducto[1].'</td>
 		<td width="auto" nowrap>'.$rowrstproducto[4].'</td>
 		<td width="auto" nowrap>€'.($rowrstproducto[4]*$rowrstproducto[2]).'</td>		

@@ -8,16 +8,24 @@ $(document).on('keyup mouseup', '.apuntadorcarro', function() {
             $('#cantservicio'+(t)).val(0);
         }   
         var cant=parseFloat($('#cantservicio'+(t)).val());
+
+        var idcart=$('#num'+(t)).val(); 
+        var cant=parseFloat($('#cantservicionav'+(t)).val());
+        $.post('updateCart.php', {evento:'cantidad',cant_cart: cant, idCart: idcart}, function(data){
+         
+         });
         /* nav */
         $('#cantservicionav'+(t)).val(cant);
 
 
-        var subtotal=parseFloat($('#subtotal'+(t)).val());
-        acumulado+=(cant*subtotal);
+        var subtotal=parseFloat($('#subtotal'+(t)).val())*cant;
+        acumulado+=(subtotal);
     }
     $('#montopagar').val("€ "+acumulado);
     $('#totalaPagar').text("€ "+acumulado);
-    
+
+    $('#montopagar').val("€ "+acumulado);
+    $('#totalNav').text("€ "+acumulado);
     
   });
 
@@ -28,24 +36,33 @@ $(document).on('keyup mouseup', '.apuntadorcarro', function() {
     for(var t=1;t<totalconcepto;t++){   
         if($('#cantservicionav'+(t)).val()==''){
             $('#cantservicionav'+(t)).val(0);
-        }   
+        }  
+        var cart_id=$('#num'+(t)).val(); 
         var cant=parseFloat($('#cantservicionav'+(t)).val());
+        $.post('updateCart.php', {evento:'cantidad',cant_cart: cant, id_cart: cart_id}, function(data){
+         
+         });
         /* nav */
         $('#cantservicio'+(t)).val(cant);
 
 
-        var subtotal=parseFloat($('#subtotal'+(t)).val());
-        acumulado+=(cant*subtotal);
+        var subtotal=parseFloat($('#subtotal'+(t)).val())*cant;
+        acumulado+=(subtotal);
     }
     $('#montopagar').val("€ "+acumulado);
     $('#totalaPagar').text("€ "+acumulado);
+
+    $('#montopagar').val("€ "+acumulado);
+    $('#totalNav').text("€ "+acumulado);
+    
+    
     
     
   });
  
   var aplicar=false;
   $(document).on('click','#activate', function(){
-      alert('hola');
+     
     var coupon = $('#coupon').val();
     var price = $('#price').val();
    
@@ -70,14 +87,16 @@ $(document).on('keyup mouseup', '.apuntadorcarro', function() {
           $('#total').val(json.price);
           $('#DescuentoNav').text(json.price);
           $('#totalDescuentos').val(json.price);
-
+         
           var id=json.id;
           var totalconcepto=parseInt($('#totalservicios').val(),10);
           var idcart;
           var categ;
-          
+          $('#descuento').val(totalconcepto-json.price);
+
           for(var t=1;t<totalconcepto;t++){   
                idcart=parseInt($('#num'+t).val());
+              
                categ=$('#categoria'+t).val();
               if(categ=='1' || categ=='2' || categ=='3' || categ=='4' ){
                  aplicar=true;    
@@ -115,8 +134,8 @@ $(document).on('keyup mouseup', '.apuntadorcarro', function() {
         $('#cantservicio'+(t)).val(cant);
 
 
-        var subtotal=parseFloat($('#subtotal'+(t)).val());
-        acumuladonav+=(cant*subtotal);
+        var subtotal=parseFloat($('#subtotal'+(t)).val())*cant;
+        acumuladonav+=(subtotal);
     }
    
     $('#totalaPagar').text("€ "+acumuladonav);

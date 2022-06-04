@@ -4,8 +4,15 @@
   <head>
     <title>TRAVEL N CHANGE</title>
     <?php include "head-meta.php";?>
-    <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
-    <script src="js/cart.js"></script>
+    <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet"/>
+<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/css/bootstrap-datetimepicker.css" rel="stylesheet"/>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.2/moment.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.37/js/bootstrap-datetimepicker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/locale/es.js"></script>
+<script src="js/cart.js"></script>
   </head>
    <!-- Body-->
    <body class="handheld-toolbar-enabled">
@@ -102,7 +109,80 @@
                 </div>
               </div>
             </div>
+           
+          <?php 
+          $fechahoy=date("Y-m-d");  
+          $sqlservices=" SELECT * FROM  cart WHERE fechaCompra='".$fechahoy."'";
+          $Servicioinfo = mysqli_query($mysqli,$sqlservices);
+          if(mysqli_num_rows($Servicioinfo) > 0){
+            $indice=0;
+            while($fetch_infoServicio = mysqli_fetch_assoc($Servicioinfo)){ 
+              $indice++;
+              $queServicio=$fetch_infoServicio['n_service'];
+              switch ($queServicio) {
+                case '1':
+                  imprimiirformulario($indice,"INTERSHIP", $queServicio);
+                  break;
+                  case '2':
+                    imprimiirformulario($indice,"FOOTBALL" ,$queServicio);
+                    break;
+                    case '3':
+                      imprimiirformulario($indice,"MALETA", $queServicio);
+                      break;                    
+              }
+            
+            }
+          }
 
+
+          ?>
+
+          <?php 
+            function imprimiirformulario($indice,$titulo,$numService){ ?>
+         
+            <h2 class='h6 pt-1 pb-3 mb-3 border-bottom'><?php echo $titulo; ?></h2>
+            <div class='row' id="row<?php echo $titulo.$indice;  ?>" >
+              <div class='col-sm-6' id="rowfecha<?php echo $indice; ?>">
+                <div class='mb-3' id="rowformfecha<?php echo $indice; ?>">
+                  <label class='form-label' id="lblfecha<?php echo $indice;; ?>" for='checkout-fn'>Fecha y Hora</label>                  
+                  <div class='input-group date fechapicker' id='datetimepicker1<?php echo $indice; ?>'>
+                    <input type='text' class="form-control " id="fechapicker<?php echo $indice; ?>" />
+                    <span id="spn<?php echo $indice;; ?>" class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                   
+                    <script>
+                       $(function () {
+                $('.fechapicker').datetimepicker({
+                  locale: 'es'
+                });
+            });
+                      
+                    </script>
+                </div>
+                </div>
+              </div> 
+              <div class='col-sm-6'  id="rowdirenvio<?php echo $indice; ?>">
+                <div class='mb-3' id="rowformdirenvio<?php echo $indice; ?>">
+                  <label class='form-label' id="lbldirenvio<?php echo $indice; ?>" for='checkout-fn'>direccion retiro</label>
+                  <input class='form-control' id="txtdirenvio<?php echo $indice; ?>" type='text'>
+                </div>
+              </div>
+              <div class='col-sm-6'  id="rowdirentrega<?php echo $indice; ?>">
+                <div class='mb-3' id="rowformdirentrega<?php echo $indice; ?>">
+                  <label class='form-label' id="lbldirentrega<?php echo $indice; ?>" for='checkout-fn'>direccion entrega</label>
+                  <input class='form-control'  id="txtdirentrega<?php echo $indice; ?>" type='text'>
+                </div>
+              </div>
+              <div class='col-sm-6' id="rowdservicio<?php echo $indice; ?>">
+                <div class='mb-3'>                  
+                <input type="hidden" id="tiposervicio<?php echo $indice; ?>" value="<?php echo $numService; ?>">
+                </div>
+              </div>
+            </div>
+<?php
+            }          
+          ?>
 
 
           </section> 
@@ -112,6 +192,7 @@
                 <div class="widget mb-3">
                   <h2 class="widget-title text-center">Resumen del pedido</h2>
                   <?php 
+                  $subtotal=0;
                   $numprod=0;
                    $total=0;
                    $select_cartdet = mysqli_query($mysqli, "SELECT * FROM cart left join coupon on coupon.coupon_id=cart.id_Coupon ");
@@ -121,7 +202,7 @@
                    $idDescuento=0;
                    if(mysqli_num_rows($select_cartdet) > 0){
                      while($fetch_cartdet = mysqli_fetch_assoc($select_cartdet)){   
-                       $numprod++;                     
+                       $numprod++;                      
                   ?>
                     <div id="divresumendet<?php echo $contdet; ?>" class="d-flex align-items-center pb-2 border-bottom">
                     <a id="linkresumendet<?php echo $contdet; ?>" class="d-block flex-shrink-0" href="shop-single-v1.html">
@@ -143,9 +224,14 @@
                   </div> 
                   <form action="stripe/create-checkout-session.php" method="POST"> 
                     <?php 
+                      $subtotal=($fetch_cartdet['price']*$fetch_cartdet['quantity']);
                       $idDescuento=$fetch_cartdet['id_Coupon'];
-                      $total+=($fetch_cartdet['price']*$fetch_cartdet['quantity']);
-                      $descuento+=($fetch_cartdet['price']*$fetch_cartdet['quantity'])-($fetch_cartdet['price']*($fetch_cartdet['discount'])/100);
+                      $total+=$subtotal;
+                      if($idDescuento>0){
+                        
+                      $descuento+=$subtotal-($subtotal*($fetch_cartdet['discount']/100));
+                      }
+                     // $descuento+=($fetch_cartdet['price']*$fetch_cartdet['quantity'])-($fetch_cartdet['price']*($fetch_cartdet['discount'])/100);
                       $contdet++;
                     }
                   }  ?>
@@ -155,11 +241,11 @@
                       <input id="subtotal" type="hidden" name="producto_total" value="€ <?php echo $total; ?>">
                     </li>
                     <li class="d-flex justify-content-between align-items-center">
-                      <span class="me-2">Discount:</span><span class="text-end">€ <?php echo $total-$descuento; ?></span>
+                      <span class="me-2">Discount:</span><span class="text-end">€ <?php echo $descuento; ?></span>
                       <input type="hidden" name="producto_totaldescuento" value="€ <?php echo  $total-$descuento; ?>">
                     </li>
                   </ul>  
-                  <h3 class="fw-normal text-center my-4">€ <?php echo $descuento; ?></h3> 
+                  <h3 class="fw-normal text-center my-4">€ <?php echo  $total-$descuento; ?></h3> 
                   <input type="hidden" id="numproducto" value="<?php echo $numprod;  ?>"> 
                   <input Type="hidden" id="idDescuento" value="<?php echo $idDescuento;  ?>" >
                   <input type="hidden" name="producto_descuento" value="€ <?php echo $descuento; ?>"> 
@@ -177,9 +263,23 @@
                        var lDescuento=$('#idDescuento').val();
                        var sbtotal=$('#subtotal').val();
                        var numProducto=$('#numproducto').val();
-                       var res;
-                        $.post('guardar.php', {fName: fnam, sName: lnam, tel:lphone, pais:lcountry,email:lemail,idCupon:lDescuento,total:sbtotal,totalproducto:numProducto}, function(data){
-                       console.log(data);
+                      
+                     var res;
+                        $.post('guardar.php', {action:'factura',fName: fnam, sName: lnam, tel:lphone, pais:lcountry,email:lemail,idCupon:lDescuento,total:sbtotal,totalproducto:numProducto}, function(data){
+                           for (let index = 0; index < numProducto; index++) {                            
+                         var fechahora=$('#fechapicker'+(index+1)).val().split(" ");                        
+                         var fechaservformat=fechahora[0].split('/');
+                         var fechaserv=fechaservformat[2]+'-'+fechaservformat[1]+'-'+fechaservformat[0];
+                       
+                         var horaserv=fechahora[1];
+                         var direenvio=$('#txtdirenvio'+(index+1)).val();
+                         var direentrega=$('#txtdirentrega'+(index+1)).val();
+                         var servicio=$('#tiposervicio'+(index+1)).val();
+                         $.post('guardar.php', {action:'forms',fecha: fechaserv, hora: horaserv, direnv:direenvio, direntr:direentrega,numService:servicio}, function(dataserv){
+                             window.location='stripe/create-checkout-session.php';
+                         });
+
+                       }
                         });
                        
                     };

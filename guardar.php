@@ -17,6 +17,9 @@
 <?php   
 
  	include('dash/conexion.php');
+  if($_POST['action']=="factura"){
+
+
   
 	$nombre = $_POST['fName'];
 	$apellido = $_POST['sName'];
@@ -61,10 +64,7 @@
 	 	$cantidad=$carritoProd[4];
 		$idcupon=$carritoProd[6];
 		$queryFacturaDet=" INSERT INTO facturas_detalle(idfactura ,idproducto ,cantidad) VALUES('$idFactura','$id','$cantidad')";
-		mysqli_query($mysqli,$queryFacturaDet);	
-		
-		
-
+		mysqli_query($mysqli,$queryFacturaDet);			
 	if($idcupon>0){
 		$strSelectcupon=' SELECT * FROM coupon WHERE coupon_id='.$idcupon;
 		$rstcupon=mysqli_query($mysqli,$strSelectcupon);
@@ -77,17 +77,16 @@
 	
 
 	}
+}else if($_POST['action']=="forms"){
+	echo $fecha=$_POST['fecha'];
+	$hora=$_POST['hora'];
+	$direccionenvio=$_POST['direnv'];
+	$direccionentrega=$_POST['direntr'];
+	$numServicio=$_POST['numService'];
+	$strInsertServicio=" INSERT INTO pdf_servicios (fecha,hora,direccion_retiro,direccion_entrega,servicio)"
+						." VALUES('$fecha','$hora','$direccionenvio','$direccionentrega','$numServicio') ";
 
-	
+	mysqli_query($mysqli,$strInsertServicio) or die ( mysql_error() );	
+}
 ?>
 
-<?php
-
-		echo '
-			<script>
-				location.href="paynew?id='.$idFactura.'";
-			</script>';	
- 
- 
-
-?>

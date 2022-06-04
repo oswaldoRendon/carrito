@@ -7,15 +7,17 @@ if(isset($_POST['add_to_cart'])){
    $product_price = $_POST['product_price'];
    $product_image = $_POST['product_image'];
    $product_n_service = $_POST['product_n_service'];
+   $product_id=$_POST['product_id'];
 
    $product_quantity = 1;
 
-   $select_cart = mysqli_query($mysqli, "SELECT * FROM `cart` WHERE name = '$product_name'");
+   $select_cart = mysqli_query($mysqli, " SELECT * FROM `cart` WHERE name = '$product_name'");
 
    if(mysqli_num_rows($select_cart) > 0){
       $message[] = 'product already added to cart';
    }else{
-      $insert_product = mysqli_query($mysqli, "INSERT INTO `cart`(name, price, image, quantity, n_service) VALUES('$product_name', '$product_price', '$product_image', '$product_quantity', '$product_n_service')");
+    $fechahoy=date("Y-m-d");  
+      $insert_product = mysqli_query($mysqli, " INSERT INTO `cart`(name, price, image, quantity, n_service,fechaCompra) VALUES('$product_name', '$product_price', '$product_image', '$product_quantity', '$product_n_service','$fechahoy')");
       $message[] = 'product added to cart succesfully';
    }
 
@@ -141,6 +143,7 @@ echo'<div class="alert alert-success alert-dismissible fade show" role="alert"><
                 </div>
               </div>
               <div class="card-footer mt-n1 py-0 border-0">
+                <input type="hidden" name="product_id" value="<?php echo $fetch_product['id']; ?>" >
                 <input type="hidden" name="product_name" value="<?php echo $fetch_product['name']; ?>">
             <input type="hidden" name="product_price" value="<?php echo $fetch_product['price']; ?>">
             <input type="hidden" name="product_image" value="<?php echo $fetch_product['image']; ?>">

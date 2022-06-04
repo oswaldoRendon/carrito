@@ -11,13 +11,24 @@ header('Content-Type: application/json');
 <h1>hola</h1>
  <div class="display-order">
       <?php
-         $select_cart = mysqli_query($mysqli, "SELECT * FROM `cart`");
+         $fechaCompra=date('Y-m-d');
+         $strsql="select *  from facturas_detalle 
+         inner join cart on facturas_detalle.idproducto=cart.id   
+         left join coupon on coupon.coupon_id=cart.id_Coupon     
+         WHERE cart.fechaCompra='".$fechaCompra."'
+         order by cart.fechacompra desc"; 
+
+         
+          $select_cart = mysqli_query($mysqli,$strsql );
+
+        
+        
          $total = 0;
          $grand_total = 0;
          if(mysqli_num_rows($select_cart) > 0){
             while($fetch_cart = mysqli_fetch_assoc($select_cart)){
-            $total_price = number_format($fetch_cart['price'] * $fetch_cart['quantity']);
-            $grand_total = $total += $total_price;
+            $total_price = number_format((($fetch_cart['price'] * $fetch_cart['quantity'])*100));
+           // $grand_total = $total += $total_price;
       ?>
       <span><?= $fetch_cart['name']; ?>(<?= $fetch_cart['quantity']; ?>)</span>
       <?php
@@ -30,7 +41,7 @@ header('Content-Type: application/json');
    </div>
    <?php
 $items=[];
-
+$itemdiscount=[];
 foreach($select_cart as $k=>$fetch_cart){
 
   $items[]=[
@@ -41,12 +52,18 @@ foreach($select_cart as $k=>$fetch_cart){
         'product_data' => [
           'name' => $fetch_cart['name']         
         ],        
-        'unit_amount' => $fetch_cart['price'],
+        'unit_amount' => ($fetch_cart['price']*100)
+        
         
       ],
-      'quantity' => $fetch_cart['quantity'],
-    //],
-        //  'images' =>$headerUrl."dash/uploaded_img/".$fetch_cart['image'],
+      'quantity' => $fetch_cart['quantity'],   
+    ];
+    $itemdiscount[]=[
+      'id'=>$fetch_cart['coupon_id'],
+      'object'=> 'coupon',
+      'currency'=> 'eur',
+      'name'=> $fetch_cart['coupon_code'],
+      'percent_off'=> $fetch_cart['discount']
     ];
    /*echo "<pre>";
    var_dump($items);
@@ -60,6 +77,7 @@ $checkout_session = \Stripe\Checkout\Session::create([
   ],
   'line_items' => $items,
   'mode' => 'payment',
+  'discounts'=>$itemdiscount,
   'success_url' => $headerUrl . 'stripe/success_payment.php',
   'cancel_url' => $headerUrl . 'cancel_payment.php',
 ]);
