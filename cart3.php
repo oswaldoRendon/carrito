@@ -68,6 +68,7 @@
          $subtotal=0;
          $select_cart = mysqli_query($mysqli, "SELECT * FROM `cart`");
          $grand_total = 0;
+         $codigocupon='';
          if(mysqli_num_rows($select_cart) > 0){
            $cont=1;
            $totaldescuento=0;
@@ -109,7 +110,8 @@
                $strDescuento=" SELECT * FROM coupon WHERE coupon_id =".$cupon;                
                $resDescuento=mysqli_query($mysqli,$strDescuento);
                $fetch_desct = mysqli_fetch_assoc($resDescuento);
-               $totaldescuento+=$sub_total-($sub_total*($fetch_desct['discount']/100));
+               $codigocupon=$fetch_desct['coupon_code'];
+               $totaldescuento+= ($fetch_cart['price']*($fetch_desct['discount']/100));
             }
            
            
@@ -151,7 +153,16 @@
                                 <div class="accordion-collapse collapse show"  data-bs-parent="#order-options">
                       <!--<form class="accordion-body needs-validation" method="post" novalidate>-->
                         <div class="mb-3">
-                          <input class="form-control" type="text" placeholder="Promo code" id="coupon">
+                          <?php if($codigocupon<>''){?>
+                            <input class="form-control" type="text" disabled="<?php echo $codigocupon<>''?true:false; ?>" placeholder="Promo code" id="coupon" value="<?php echo $codigocupon<>''? $codigocupon:''; ?>">
+                            <?php
+                          } else{ ?>
+                            <input class="form-control" type="text"  placeholder="Promo code" id="coupon" >
+                        <?php
+                          } ?>
+                          
+                          
+                          
                           <input type="hidden" value="<?php echo $grand_total; ?>" id="price"/>
                           <div class="invalid-feedback">Please provide promo code.</div>
                           <div id="result"></div>

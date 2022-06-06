@@ -11,41 +11,41 @@ $totalProducto=$rowFact[3];
 $nombre=$rowFact[4];
 $apellido=$rowFact[5];
 $apellido=$rowFact[6];
-
+$claveCoupon="";
+$idcupon=0;
 $importeCoupon=0;
 $total=0;
+$strdatosProducto="";
 
-
-$sqlQuery=" select *  from facturas_detalle 
-inner join cart on facturas_detalle.idproducto=cart.id
-inner join products on products.name=cart.name 
-inner join pdf_servicios on cart.n_service = pdf_servicios.id_servicios
-left join coupon on cart.id_Coupon=coupon.coupon_id
+ $sqlQuery=" SELECT *  FROM cart 
+ INNER JOIN products ON products.name=cart.name
+ INNER  JOIN facturas_detalle ON products.id=facturas_detalle.idproducto
+ LEFT JOIN coupon ON cart.id_Coupon=coupon.coupon_id
 WHERE cart.fechaCompra='".$fechaCompra."'
-order by cart.fechacompra desc limit ".$totalProducto;
+ORDER BY cart.fechacompra DESC LIMIT ".$totalProducto;
+
 $prodDet=mysqli_query($mysqli,$sqlQuery);
-while ($rowFacDet=mysqli_fetch_assoc($prodDet)) {		
+$porcCoupon=0;
+while ($rowFacDet=mysqli_fetch_assoc($prodDet)) {
+
+	$subtotal=($rowFacDet['price']*$rowFacDet['quantity']);
 	$strdatosProducto.='<tr>
-		<td width="auto" nowrap>'.$rowrstproducto['name'].'</td>
-		<td width="auto" nowrap>'.$rowrstproducto['quantity'].'</td>
-		<td width="auto" nowrap>€'.($rowrstproducto['price']*$rowrstproducto['quantity']).'</td>		
+		<td width="auto" nowrap>'.$rowFacDet['name'].'</td>
+		<td width="auto" nowrap>'.$rowFacDet['quantity'].'</td>
+		<td width="auto" nowrap>€'.($rowFacDet['price']*$rowFacDet['quantity']).'</td>		
 	</tr>';	
 	$strdatosServicios.='<tr>
-		<td width="auto" nowrap>'.$rowrstproducto[1].'</td>
-		<td width="auto" nowrap>'.$rowrstproducto[4].'</td>
-		<td width="auto" nowrap>€'.($rowrstproducto[4]*$rowrstproducto[2]).'</td>		
+		<td width="auto" nowrap>'.$rowFacDet[1].'</td>
+		<td width="auto" nowrap>'.$rowFacDet[4].'</td>
+		<td width="auto" nowrap>€'.($rowFacDet[4]*$rowFacDet[2]).'</td>		
 	</tr>';	
 
-	if($idcupon>0){
-		$strSelectcupon=' SELECT * FROM coupon WHERE coupon_id='.$idcupon;
-		$rstcupon=mysqli_query($mysqli,$strSelectcupon);
-		$rowrstcupon=mysqli_fetch_array($rstcupon);
-		$claveCoupon=$rowrstcupon[1];
-		$porcCoupon=(($rowrstcupon[2])/100);
-		$importeCoupon+=($porcCoupon*($cantidad*$rowrstproducto[2]));
-		mysqli_free_result($rstcupon);
+	if($rowFacDet["coupon_id"]<>''){		
+		$claveCoupon=$rowFacDet["coupon_clave"];
+		$porcCoupon=($rowFacDet['discount']);
+		$importeCoupon+= $rowFacDet['price']*($porcCoupon/100);	
 	}
-	$total+=($cantidad*$rowrstproducto[2]);
+	$total+=$subtotal;
 }
 
 $output = '
@@ -77,7 +77,7 @@ img {
 		 <tr>
 			 <td width="auto" >'.$nombre.'</td>
 			 <td width="auto" >'.$apellido.'</td>
-			 <td width="auto" >'.$idFactura.'</td>
+			 <td width="auto" >'.$idfactura.'</td>
 			 <td width="auto" >'.$fechaCompra.'</td>
 		 </tr>
 	 </table>
@@ -96,8 +96,8 @@ if($idCupon != '-1')
 {
 	$output.='
 	<tr>
-		<td width="" nowrap colspan="2">Discount Coupon Applied: #'.$claveCoupon.' ('.$importeCoupon.'% OFF)</td>
-		<td width="" nowrap>-€ '.$porcCoupon.'</td>
+		<td width="" nowrap colspan="2">Discount Coupon Applied: #'.$claveCoupon.' ('.($porcCoupon).'% OFF)</td>
+		<td width="" nowrap>'.$importeCoupon.'</td>
 	 </tr>';
 }
 
@@ -122,7 +122,7 @@ $output.='
 		<h5>Please present a valid ID to the driver. It is not necesary to print this document.</h5>
 </div>';
 
-require('../pdf/pdf.php');
+require('../pdf/pdf.php'); 
 	//$num_factura=rand(1,50);
 	//$file_name = md5(rand()) . '.pdf';
 	$file_name="factura_producto_".$nombre.$fechaCompra.$idFactura.".pdf";
@@ -136,11 +136,11 @@ require('../pdf/pdf.php');
 	file_put_contents($ruta.$file_name, $file);
 
 
- require('../../sendemail.php');
+ require('../sendemail.php');
 
- enviarcorreo($file_name,"Se envia lla factura","Gracias por su compra","coreo desde","correo hasta");	
+ enviarcorreo($file_name,"Se envia lla factura","Gracias por su compra","oswaldomex@hotmail.com","oswaldorendonmiranda@gmail.com");	
 
-header("Location:../success_payment.php?pedido=".($row_ultimo['ultimo']));
+  
 
 
 

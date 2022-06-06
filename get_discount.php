@@ -12,7 +12,7 @@
 		$discount = $fetch_cart['discount'] / 100;
 		$total = $discount * $price;
 		$array['discount'] = $fetch_cart['discount'];
-		$array['price'] = $price - $total;
+		$array['price'] = $price;
 		$array['id'] =$fetch_cart['coupon_id'];
 		echo json_encode($array);
 		

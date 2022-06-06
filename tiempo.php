@@ -229,7 +229,7 @@
                       $total+=$subtotal;
                       if($idDescuento>0){
                         
-                      $descuento+=$subtotal-($subtotal*($fetch_cartdet['discount']/100));
+                      $descuento+=($fetch_cartdet['price']*($fetch_cartdet['discount']/100));
                       }
                      // $descuento+=($fetch_cartdet['price']*$fetch_cartdet['quantity'])-($fetch_cartdet['price']*($fetch_cartdet['discount'])/100);
                       $contdet++;

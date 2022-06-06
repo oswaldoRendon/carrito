@@ -48,7 +48,9 @@
 	$idFactura=$rowresProducto['idFactura'];//obtiene el id de factura
 	mysqli_free_result($facturaRes);
 	$fechahoy=date("Y-m-d");  
-	$sqlQuery=" SELECT  * FROM cart WHERE fechaCompra='".$fechahoy."' limit ".$totalProductos;// exit;
+	$sqlQuery="SELECT *  FROM cart 
+	INNER JOIN products ON products.name=cart.name
+	WHERE cart.fechaCompra='".$fechahoy."' LIMIT ".$totalProductos;// exit;
 	$prodDet=mysqli_query($mysqli,$sqlQuery);
 	//$carritoProd = mysqli_fetch_assoc($prodDet);
 	
@@ -63,7 +65,8 @@
 		$id=$carritoProd[0];
 	 	$cantidad=$carritoProd[4];
 		$idcupon=$carritoProd[6];
-		$queryFacturaDet=" INSERT INTO facturas_detalle(idfactura ,idproducto ,cantidad) VALUES('$idFactura','$id','$cantidad')";
+		$idproduct=$carritoProd[9];
+		$queryFacturaDet=" INSERT INTO facturas_detalle(idfactura ,idproducto ,cantidad) VALUES('$idFactura','$idproduct','$cantidad')";
 		mysqli_query($mysqli,$queryFacturaDet);			
 	if($idcupon>0){
 		$strSelectcupon=' SELECT * FROM coupon WHERE coupon_id='.$idcupon;

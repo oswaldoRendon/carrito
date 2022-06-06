@@ -1,9 +1,9 @@
 <?php
-$headerUrl='http://localhost/cartchop/';
+$headerUrl='http://localhost/carrito/';
 require '../dash/conexion.php';
 require './vendor/autoload.php';
 
-\Stripe\Stripe::setApiKey('sk_test_51JCfE2KMQwBDLjYkslgiFIAWuKfHH7hA8Uq4E4XKg11Xr8iBKFxn42uQpKnapTqfmdGeUWTj56Y4ti69qmW74qaN0011UNngQu');
+\Stripe\Stripe::setApiKey('');
 //require '../includes/header.php';
 //require '../includes/phpfunction.php';
 header('Content-Type: application/json');
@@ -12,13 +12,14 @@ header('Content-Type: application/json');
  <div class="display-order">
       <?php
          $fechaCompra=date('Y-m-d');
-         $strsql="select *  from facturas_detalle 
-         inner join cart on facturas_detalle.idproducto=cart.id   
-         left join coupon on coupon.coupon_id=cart.id_Coupon     
+         $strsql="SELECT *  FROM cart 
+         INNER JOIN products ON products.name=cart.name
+         INNER  JOIN facturas_detalle ON products.id=facturas_detalle.idproducto
+         LEFT JOIN coupon ON cart.id_Coupon=coupon.coupon_id    
          WHERE cart.fechaCompra='".$fechaCompra."'
          order by cart.fechacompra desc"; 
 
-         
+        
           $select_cart = mysqli_query($mysqli,$strsql );
 
         
@@ -27,6 +28,10 @@ header('Content-Type: application/json');
          $grand_total = 0;
          if(mysqli_num_rows($select_cart) > 0){
             while($fetch_cart = mysqli_fetch_assoc($select_cart)){
+
+              
+
+
             $total_price = number_format((($fetch_cart['price'] * $fetch_cart['quantity'])*100));
            // $grand_total = $total += $total_price;
       ?>
@@ -42,42 +47,36 @@ header('Content-Type: application/json');
    <?php
 $items=[];
 $itemdiscount=[];
+$idcupon=0;
 foreach($select_cart as $k=>$fetch_cart){
-
-  $items[]=[
-    
-      'price_data' => [
-        'currency' => 'eur',
-        
-        'product_data' => [
-          'name' => $fetch_cart['name']         
-        ],        
-        'unit_amount' => ($fetch_cart['price']*100)
-        
-        
-      ],
+  /* sacas la clave del precio */
+  $queryproduct=" SELECT price_clave FROM products WHERE name='".$fetch_cart['name']."'";  
+  $rowproducto= mysqli_query($mysqli,$queryproduct );
+  $fetch_product = mysqli_fetch_assoc($rowproducto);
+  if($fetch_cart['id_Coupon'] !=""){
+    $idcupon=$fetch_cart['id_Coupon'];
+  }
+  
+  $items[]=[    
+      'price' =>$fetch_product['price_clave'],
       'quantity' => $fetch_cart['quantity'],   
-    ];
-    $itemdiscount[]=[
-      'id'=>$fetch_cart['coupon_id'],
-      'object'=> 'coupon',
-      'currency'=> 'eur',
-      'name'=> $fetch_cart['coupon_code'],
-      'percent_off'=> $fetch_cart['discount']
-    ];
-   /*echo "<pre>";
-   var_dump($items);
-   echo "</pre>";
-   exit;*/
+    ];   
 }
+/* sacas la clave del coupon */
+$querycoupon=" SELECT coupon_clave FROM coupon WHERE coupon_id=".$idcupon;
+$rowcoupon= mysqli_query($mysqli,$queryproduct );
+$fetch_coupon = mysqli_fetch_assoc($rowproducto);
+
 
 $checkout_session = \Stripe\Checkout\Session::create([
   'payment_method_types' => [
     'card',
   ],
   'line_items' => $items,
-  'mode' => 'payment',
-  'discounts'=>$itemdiscount,
+  'mode' => 'payment',  
+  'discounts' => [[
+    'coupon' => 'G3NoPR7U',
+  ]], 
   'success_url' => $headerUrl . 'stripe/success_payment.php',
   'cancel_url' => $headerUrl . 'cancel_payment.php',
 ]);

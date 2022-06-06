@@ -2,7 +2,7 @@
 
 //pdf.php
 
-require_once './dompdf/autoload.inc.php';
+require('../dompdf/autoload.inc.php');
 
 use Dompdf\Dompdf;
 

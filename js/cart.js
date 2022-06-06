@@ -8,24 +8,38 @@ $(document).on('keyup mouseup', '.apuntadorcarro', function() {
             $('#cantservicio'+(t)).val(0);
         }   
         var cant=parseFloat($('#cantservicio'+(t)).val());
-
+        $('#cantservicionav'+(t)).val(cant);
         var idcart=$('#num'+(t)).val(); 
         var cant=parseFloat($('#cantservicionav'+(t)).val());
         $.post('updateCart.php', {evento:'cantidad',cant_cart: cant, idCart: idcart}, function(data){
          
          });
         /* nav */
-        $('#cantservicionav'+(t)).val(cant);
+       
 
 
         var subtotal=parseFloat($('#subtotal'+(t)).val())*cant;
         acumulado+=(subtotal);
     }
-    $('#montopagar').val("€ "+acumulado);
-    $('#totalaPagar').text("€ "+acumulado);
+    var descuento=$('#descuento').val().replace('€ ','');
+    if(descuento==''){
 
-    $('#montopagar').val("€ "+acumulado);
-    $('#totalNav').text("€ "+acumulado);
+      $('#montopagar').val("€ "+acumulado);
+      $('#totalaPagar').text("€ "+acumulado);
+      $('#Subtotal').val("€ "+acumulado);      
+      $('#subtotalnav').text("€ "+acumulado);      
+      $('#totalNav').text("€ "+acumulado);
+    }else{
+      $('#Subtotal').val("€ "+acumulado);
+      $('#subtotalnav').text("€ "+acumulado);
+      var sbtotal=$('#Subtotal').val().replace('€ ','');
+      $('#montopagar').val("€ "+(sbtotal-descuento));
+      $('#totalaPagar').text("€ "+(sbtotal-descuento));
+  
+      $('#montopagar').val("€ "+(sbtotal-descuento));
+      $('#totalNav').text("€ "+(sbtotal-descuento));
+    }
+   
     
   });
 
@@ -37,26 +51,42 @@ $(document).on('keyup mouseup', '.apuntadorcarro', function() {
         if($('#cantservicionav'+(t)).val()==''){
             $('#cantservicionav'+(t)).val(0);
         }  
+        
         var cart_id=$('#num'+(t)).val(); 
+        
         var cant=parseFloat($('#cantservicionav'+(t)).val());
+        $('#cantservicio'+(t)).val(cant);
         $.post('updateCart.php', {evento:'cantidad',cant_cart: cant, id_cart: cart_id}, function(data){
          
          });
         /* nav */
-        $('#cantservicio'+(t)).val(cant);
+     
 
-
+        
         var subtotal=parseFloat($('#subtotal'+(t)).val())*cant;
         acumulado+=(subtotal);
     }
-    $('#montopagar').val("€ "+acumulado);
-    $('#totalaPagar').text("€ "+acumulado);
 
-    $('#montopagar').val("€ "+acumulado);
-    $('#totalNav').text("€ "+acumulado);
-    
-    
-    
+    var dsct=$('#DescuentoNav').text().replace('€0',''); 
+   
+    if(dsct=="  "){
+
+      $('#montopagar').val("€ "+acumulado);
+      $('#totalaPagar').text("€ "+acumulado);
+      $('#Subtotal').val("€ "+acumulado);      
+      $('#subtotalnav').text("€ "+acumulado);      
+      $('#totalNav').text("€ "+acumulado);
+    }else{
+      $('#Subtotal').val("€ "+acumulado);
+      $('#subtotalnav').text("€ "+acumulado);
+      var sbtotal=$('#Subtotal').val().replace('€ ','');
+      $('#montopagar').val("€ "+(sbtotal-dsct));
+      $('#totalaPagar').text("€ "+(sbtotal-dsct));
+  
+      $('#montopagar').val("€ "+(sbtotal-dsct));
+      $('#totalNav').text("€ "+(sbtotal-dsct));
+    }
+  
     
   });
  
@@ -84,23 +114,28 @@ $(document).on('keyup mouseup', '.apuntadorcarro', function() {
           var json = JSON.parse(data);
           
           $('#result').html("<h4 class='pull-right text-primary'>"+json.discount+"% Off</h4>");
-          $('#total').val(json.price);
-          $('#DescuentoNav').text(json.price);
-          $('#totalDescuentos').val(json.price);
+          
          
+        
+         console.log(json);
           var id=json.id;
           var totalconcepto=parseInt($('#totalservicios').val(),10);
           var idcart;
           var categ;
-          $('#descuento').val(totalconcepto-json.price);
+       
 
           for(var t=1;t<totalconcepto;t++){   
-               idcart=parseInt($('#num'+t).val());
-              
+               idcart=parseInt($('#num'+t).val());              
                categ=$('#categoria'+t).val();
               if(categ=='1' || categ=='2' || categ=='3' || categ=='4' ){
-                 aplicar=true;    
-                          
+              var sb=$('#subtotal'+t).val().replace('€ ','');
+               $('#descuento').val("€ "+((sb*json.discount)/100));
+               $('#DescuentoNav').text("€ "+((sb*json.discount)/100));
+               var totalMonto=$('#montopagar').val().replace('€ ','');
+               $('#montopagar').val("€ "+(totalMonto-$('#descuento').val().replace('€ ','')));
+               $('#totalNav').text($('#montopagar').val());
+                 aplicar=true;  
+                 break;                            
               }            
           }
          
@@ -108,7 +143,7 @@ $(document).on('keyup mouseup', '.apuntadorcarro', function() {
           if(aplicar==true){
             var res;
           $.post('apply_discount.php', {idcoupon: id, idCart: idcart}, function(data){
-           t=(totalconcepto-1);
+           
           });
           
         }

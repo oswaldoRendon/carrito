@@ -1,11 +1,13 @@
 
       <?php
       $contnav=1;
-      $select_cart = mysqli_query($mysqli, "SELECT * FROM cart left join coupon on coupon.coupon_id=cart.id_Coupon ");
+      $selectnav=" SELECT * FROM cart  ORDER BY fechacompra desc";
+
+      $select_cart = mysqli_query($mysqli,$selectnav);
          $grand_total = 0;
    
       $row_count = mysqli_num_rows($select_cart);
-
+      $totaldescuentonav=0;
       ?>
  <div class="container"><img src="logo.png"><a class="navbar-brand d-none d-sm-block me-4 order-lg-1 logo" href="index.html">&nbsp;TRAVEL N CHANGE</a>
 
@@ -22,7 +24,9 @@
                        $total=0;
                        $subtotal=0;
                  while($fetch_cartnav = mysqli_fetch_assoc($select_cart)){  
-                  $subtotal=$fetch_cartnav['price']*$fetch_cartnav['quantity'];                
+                  $subtotal=$fetch_cartnav['price']*$fetch_cartnav['quantity'];   
+                  
+                 
                    ?>
                   <form >
                  <div class="form-group row">
@@ -38,11 +42,14 @@
                 </div>
                  
                 <?php $contnav++; 
-                 $total+=$subtotal;
-                 if($fetch_cartnav['discount']>0){
-                  $descuento+=$sub_total-($sub_total*($fetch_cartnav['discount']/100));
-                 }
-              
+                 $total+=$subtotal; 
+                 $cuponnav=$fetch_cartnav['id_Coupon'];
+                 if($cuponnav>0){              
+                    $strDescuentonav=" SELECT * FROM coupon WHERE coupon_id =".$cuponnav;                
+                    $resDescuentonav=mysqli_query($mysqli,$strDescuentonav);
+                    $fetch_desctnav = mysqli_fetch_assoc($resDescuentonav);
+                    $totaldescuentonav+=($fetch_cartnav['price']*($fetch_desctnav['discount']/100));
+                 }                              
               } ?>
                 <input id="totalservicios" type="hidden" value="<?php echo $contnav; ?>" >
 <?php if(!isset($row_count)){ ?>
@@ -50,8 +57,8 @@
                   <p id="contenido" class="fs-sm text-muted mb-0">Your cart is currently empty</p>
 <?php }else{  ?>
 <div >Subtotal <span id="subtotalnav">€<?php echo ($total); ?></div>
-<div>Descuento <span id="DescuentoNav"> €<?php echo $descuento; ?> </span></div>
-<div>Total <span id="totalNav">€ <?php echo $total-$descuento; ?> </span></div>
+<div>Descuento <span id="DescuentoNav"> €<?php echo $totaldescuentonav; ?> </span></div>
+<div>Total <span id="totalNav">€ <?php echo $total-$totaldescuentonav; ?> </span></div>
 <?php } ?>
                 
 
