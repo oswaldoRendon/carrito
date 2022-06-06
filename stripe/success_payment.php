@@ -138,7 +138,7 @@ require('../pdf/pdf.php');
 
  require('../sendemail.php');
 
- enviarcorreo($file_name,"Se envia lla factura","Gracias por su compra","oswaldomex@hotmail.com","oswaldorendonmiranda@gmail.com");	
+ enviarcorreo($file_name,"Se envia lla factura","Gracias por su compra","","");	
 
   
 
